@@ -1,0 +1,39 @@
+import java.io.BufferedReader;
+import java.io.FileReader;
+import java.io.IOException;
+import java.util.Stack;
+
+public class GroupingSymbolsChecker {
+    public static void main(String[] args) throws IOException {
+        if (args.length != 1) {
+            System.out.println("Usage: java GroupingSymbolsChecker <source-file>");
+            return;
+        }
+
+        BufferedReader reader = new BufferedReader(new FileReader(args[0]));
+        Stack<Character> stack = new Stack<>();
+        int ch;
+        while ((ch = reader.read()) != -1) {
+            char current = (char) ch;
+            if (current == '(' || current == '{' || current == '[') {
+                stack.push(current);
+            } else if (current == ')' || current == '}' || current == ']') {
+                if (stack.isEmpty() || !isMatchingPair(stack.pop(), current)) {
+                    System.out.println("The file has incorrect pairs of grouping symbols.");
+                    reader.close();
+                    return;
+                }
+            }
+        }
+        reader.close();
+        if (stack.isEmpty()) {
+            System.out.println("The file has correct pairs of grouping symbols.");
+        } else {
+            System.out.println("The file has incorrect pairs of grouping symbols.");
+        }
+    }
+
+    private static boolean isMatchingPair(char open, char close) {
+        return (open == '(' && close == ')') || (open == '{' && close == '}') || (open == '[' && close == ']');
+    }
+}
