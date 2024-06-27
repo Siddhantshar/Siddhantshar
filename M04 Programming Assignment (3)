@@ -1,0 +1,247 @@
+import java.util.ListIterator;
+import java.util.NoSuchElementException;
+
+public class TwoWayLinkedList<E> implements MyList<E> {
+    private Node<E> head, tail;
+    private int size = 0;
+
+    public TwoWayLinkedList() {
+    }
+
+    public TwoWayLinkedList(E[] objects) {
+        for (E object : objects) {
+            addLast(object);
+        }
+    }
+
+    public E getFirst() {
+        return (size == 0) ? null : head.element;
+    }
+
+    public E getLast() {
+        return (size == 0) ? null : tail.element;
+    }
+
+    public void addFirst(E e) {
+        Node<E> newNode = new Node<>(e);
+        if (head == null) {
+            head = tail = newNode;
+        } else {
+            newNode.next = head;
+            head.previous = newNode;
+            head = newNode;
+        }
+        size++;
+    }
+
+    public void addLast(E e) {
+        Node<E> newNode = new Node<>(e);
+        if (tail == null) {
+            head = tail = newNode;
+        } else {
+            tail.next = newNode;
+            newNode.previous = tail;
+            tail = newNode;
+        }
+        size++;
+    }
+
+    @Override
+    public void add(int index, E e) {
+        if (index < 0 || index > size) throw new IndexOutOfBoundsException("Index: " + index);
+        if (index == 0) addFirst(e);
+        else if (index == size) addLast(e);
+        else {
+            Node<E> current = getNode(index - 1);
+            Node<E> newNode = new Node<>(e, current.next, current);
+            current.next.previous = newNode;
+            current.next = newNode;
+            size++;
+        }
+    }
+
+    @Override
+    public E remove(int index) {
+        if (index < 0 || index >= size) throw new IndexOutOfBoundsException("Index: " + index);
+        Node<E> toRemove;
+        if (index == 0) {
+            toRemove = head;
+            head = head.next;
+            if (head != null) head.previous = null;
+            if (head == null) tail = null;
+        } else if (index == size - 1) {
+            toRemove = tail;
+            tail = tail.previous;
+            tail.next = null;
+        } else {
+            toRemove = getNode(index);
+            toRemove.previous.next = toRemove.next;
+            toRemove.next.previous = toRemove.previous;
+        }
+        size--;
+        return toRemove.element;
+    }
+
+    @Override
+    public String toString() {
+        StringBuilder result = new StringBuilder("[");
+        Node<E> current = head;
+        while (current != null) {
+            result.append(current.element);
+            current = current.next;
+            if (current != null) result.append(", ");
+        }
+        return result.append("]").toString();
+    }
+
+    @Override
+    public void clear() {
+        head = tail = null;
+        size = 0;
+    }
+
+    @Override
+    public boolean contains(Object e) {
+        return indexOf(e) >= 0;
+    }
+
+    @Override
+    public E get(int index) {
+        if (index < 0 || index >= size) throw new IndexOutOfBoundsException("Index: " + index);
+        return getNode(index).element;
+    }
+
+    @Override
+    public int indexOf(Object e) {
+        Node<E> current = head;
+        for (int i = 0; i < size; i++) {
+            if (current.element.equals(e)) return i;
+            current = current.next;
+        }
+        return -1;
+    }
+
+    @Override
+    public int lastIndexOf(E e) {
+        Node<E> current = tail;
+        for (int i = size - 1; i >= 0; i--) {
+            if (current.element.equals(e)) return i;
+            current = current.previous;
+        }
+        return -1;
+    }
+
+    @Override
+    public E set(int index, E e) {
+        if (index < 0 || index >= size) throw new IndexOutOfBoundsException("Index: " + index);
+        Node<E> current = getNode(index);
+        E old = current.element;
+        current.element = e;
+        return old;
+    }
+
+    @Override
+    public int size() {
+        return size;
+    }
+
+    @Override
+    public ListIterator<E> listIterator() {
+        return new TwoWayLinkedListIterator(0);
+    }
+
+    @Override
+    public ListIterator<E> listIterator(int index) {
+        return new TwoWayLinkedListIterator(index);
+    }
+
+    private Node<E> getNode(int index) {
+        Node<E> current = (index < size / 2) ? head : tail;
+        if (index < size / 2) {
+            for (int i = 0; i < index; i++) current = current.next;
+        } else {
+            for (int i = size - 1; i > index; i--) current = current.previous;
+        }
+        return current;
+    }
+
+    private static class Node<E> {
+        E element;
+        Node<E> next;
+        Node<E> previous;
+
+        public Node(E e) {
+            this.element = e;
+        }
+
+        public Node(E e, Node<E> next, Node<E> previous) {
+            this.element = e;
+            this.next = next;
+            this.previous = previous;
+        }
+    }
+
+    private class TwoWayLinkedListIterator implements ListIterator<E> {
+        private Node<E> current;
+        private int index;
+
+        public TwoWayLinkedListIterator(int index) {
+            if (index < 0 || index > size) throw new IndexOutOfBoundsException("Index: " + index);
+            this.index = index;
+            current = (index == size) ? null : getNode(index);
+        }
+
+        @Override
+        public boolean hasNext() {
+            return current != null;
+        }
+
+        @Override
+        public E next() {
+            if (!hasNext()) throw new NoSuchElementException();
+            E e = current.element;
+            current = current.next;
+            index++;
+            return e;
+        }
+
+        @Override
+        public boolean hasPrevious() {
+            return (current == null && size != 0) || current.previous != null;
+        }
+
+        @Override
+        public E previous() {
+            if (!hasPrevious()) throw new NoSuchElementException();
+            if (current == null) current = tail;
+            else current = current.previous;
+            index--;
+            return current.element;
+        }
+
+        @Override
+        public int nextIndex() {
+            return index;
+        }
+
+        @Override
+        public int previousIndex() {
+            return index - 1;
+        }
+
+        @Override
+        public void remove() {
+            throw new UnsupportedOperationException("remove");
+        }
+
+        @Override
+        public void set(E e) {
+            throw new UnsupportedOperationException("set");
+        }
+
+        @Override
+        public void add(E e) {
+            throw new UnsupportedOperationException("add");
+        }
+    }
+}
