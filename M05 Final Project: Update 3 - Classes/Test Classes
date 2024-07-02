@@ -1,0 +1,150 @@
+import java.util.*;
+
+public class Gradebook {
+    // Inner class for Student
+    private static class Student {
+        private String studentId;
+        private String firstName;
+        private String lastName;
+        private Date dateOfBirth;
+
+        // Constructor
+        public Student(String studentId, String firstName, String lastName, Date dateOfBirth) {
+            this.studentId = studentId;
+            this.firstName = firstName;
+            this.lastName = lastName;
+            this.dateOfBirth = dateOfBirth;
+        }
+
+        // Getters and Setters
+        public String getStudentId() {
+            return studentId;
+        }
+
+        public String getFirstName() {
+            return firstName;
+        }
+
+        public String getLastName() {
+            return lastName;
+        }
+
+        public Date getDateOfBirth() {
+            return dateOfBirth;
+        }
+
+        @Override
+        public String toString() {
+            return "Student{" +
+                    "studentId='" + studentId + '\'' +
+                    ", firstName='" + firstName + '\'' +
+                    ", lastName='" + lastName + '\'' +
+                    ", dateOfBirth=" + dateOfBirth +
+                    '}';
+        }
+    }
+
+    // Inner class for Grade
+    private static class Grade {
+        private String evaluationName;
+        private String evaluationType;
+        private double score;
+
+        // Constructor
+        public Grade(String evaluationName, String evaluationType, double score) {
+            this.evaluationName = evaluationName;
+            this.evaluationType = evaluationType;
+            this.score = score;
+        }
+
+        // Getters and Setters
+        public String getEvaluationName() {
+            return evaluationName;
+        }
+
+        public String getEvaluationType() {
+            return evaluationType;
+        }
+
+        public double getScore() {
+            return score;
+        }
+
+        @Override
+        public String toString() {
+            return "Grade{" +
+                    "evaluationName='" + evaluationName + '\'' +
+                    ", evaluationType='" + evaluationType + '\'' +
+                    ", score=" + score +
+                    '}';
+        }
+    }
+
+    // Class attributes
+    private Map<String, Student> students = new HashMap<>();
+    private Map<String, List<Grade>> studentGrades = new HashMap<>();
+
+    // Add a new student
+    public void addStudent(String studentId, String firstName, String lastName, Date dateOfBirth) {
+        Student student = new Student(studentId, firstName, lastName, dateOfBirth);
+        students.put(studentId, student);
+        studentGrades.put(studentId, new ArrayList<>());
+    }
+
+    // Add a grade for a student
+    public void addGrade(String studentId, String evaluationName, String evaluationType, double score) {
+        Grade grade = new Grade(evaluationName, evaluationType, score);
+        List<Grade> grades = studentGrades.get(studentId);
+        if (grades != null) {
+            grades.add(grade);
+        }
+    }
+
+    // Get grades for a student
+    public List<Grade> getGrades(String studentId) {
+        return studentGrades.get(studentId);
+    }
+
+    // Calculate final grade (simple average for this example)
+    public double calculateFinalGrade(String studentId) {
+        List<Grade> grades = studentGrades.get(studentId);
+        if (grades == null || grades.isEmpty()) {
+            return 0.0;
+        }
+
+        double total = 0;
+        for (Grade grade : grades) {
+            total += grade.getScore();
+        }
+        return total / grades.size();
+    }
+
+    // Get a student by ID
+    public Student getStudent(String studentId) {
+        return students.get(studentId);
+    }
+
+    // Main method for testing
+    public static void main(String[] args) {
+        Gradebook gradebook = new Gradebook();
+
+        // Add students
+        gradebook.addStudent("S001", "John", "Doe", new Date());
+        gradebook.addStudent("S002", "Jane", "Smith", new Date());
+
+        // Add grades
+        gradebook.addGrade("S001", "Midterm", "Exam", 85.0);
+        gradebook.addGrade("S001", "Final", "Exam", 90.0);
+        gradebook.addGrade("S002", "Midterm", "Exam", 88.0);
+
+        // Display students and their grades
+        System.out.println("Student Information:");
+        System.out.println(gradebook.getStudent("S001"));
+        System.out.println("Grades:");
+        System.out.println(gradebook.getGrades("S001"));
+
+        // Calculate and display final grades
+        System.out.println("Final Grade for S001: " + gradebook.calculateFinalGrade("S001"));
+        System.out.println("Final Grade for S002: " + gradebook.calculateFinalGrade("S002"));
+    }
+}
